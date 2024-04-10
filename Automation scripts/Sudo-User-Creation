@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Запрашиваем имя пользователя
+read -p "Enter user name: " NEW_USER
+
+# Запрашиваем пароль
+read -sp "Enter password: " PASSWORD
+echo
+
+# Создаем нового пользователя с домашним каталогом и устанавливаем пароль
+useradd -m -s /bin/bash "${NEW_USER}"
+echo "${NEW_USER}:${PASSWORD}" | chpasswd
+
+# Добавляем нового пользователя в группу sudo
+usermod -aG sudo "${NEW_USER}"
+
+echo "Пользователь ${NEW_USER} создан и добавлен в группу sudo."
+
