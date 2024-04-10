@@ -1,18 +1,33 @@
 #!/bin/bash
 
 # Запрашиваем имя пользователя
-read -p "Enter user name: " NEW_USER
+read -p "Введите имя нового пользователя: " NEW_USER
 
 # Запрашиваем пароль
-read -sp "Enter password: " PASSWORD
+read -sp "Введите пароль для нового пользователя: " PASSWORD
 echo
 
-# Создаем нового пользователя с домашним каталогом и устанавливаем пароль
-useradd -m -s /bin/bash "${NEW_USER}"
-echo "${NEW_USER}:${PASSWORD}" | chpasswd
+# Спрашиваем, нужна ли собственная группа
+echo "Создать собственную группу для пользователя? (y/n)"
+read CREATE_GROUP
 
-# Добавляем нового пользователя в группу sudo
-usermod -aG sudo "${NEW_USER}"
+if [[ "$CREATE_GROUP" == "y" ]]; then
+    # Создаем нового пользователя с домашним каталогом, собственной группой и устанавливаем пароль
+    useradd -m -s /bin/bash -U "$NEW_USER"
+    echo "$NEW_USER:$PASSWORD" | chpasswd
+    echo "Пользователь $NEW_USER создан с собственной группой."
+else
+    # Создаем нового пользователя без создания собственной группы
+    useradd -m -s /bin/bash "$NEW_USER"
+    echo "$NEW_USER:$PASSWORD" | chpasswd
+    echo "Пользователь $NEW_USER создан."
+fi
 
-echo "Пользователь ${NEW_USER} создан и добавлен в группу sudo."
+# Спрашиваем, добавить ли пользователя в группу sudo
+echo "Добавить пользователя в группу sudo? (y/n)"
+read ADD_SUDO
 
+if [[ "$ADD_SUDO" == "y" ]]; then
+    usermod -aG sudo "$NEW_USER"
+    echo "Пользователь $NEW_USER добавлен в группу sudo."
+fi
