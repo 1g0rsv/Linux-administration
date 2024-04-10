@@ -1,19 +1,18 @@
 #!/bin/bash
 
-# Запрашиваем имя пользователя и адрес сервера
-read -p "Введите имя пользователя на сервере: " SERVER_USER
-read -p "Введите адрес сервера: " SERVER_ADDRESS
+# Создаем директорию .ssh, если она не существует
+mkdir -p ~/.ssh
 
-# Указываем путь к вашему публичному ключу на локальной машине
-PUB_KEY_PATH="${HOME}/.ssh/id_rsa.pub"
+# Убедимся, что файл authorized_keys существует, и установим правильные разрешения
+touch ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
 
-# Проверяем, существует ли публичный ключ
-if [ ! -f "$PUB_KEY_PATH" ]; then
-    echo "Публичный ключ не найден в $PUB_KEY_PATH"
-    exit 1
-fi
+# Читаем стандартный ввод (в нашем случае, это будет публичный SSH-ключ) и добавляем его в authorized_keys
+while IFS= read -r line; do
+    echo "$line" >> ~/.ssh/authorized_keys
+done
 
-# Читаем и добавляем публичный ключ в authorized_keys на сервере
-cat "$PUB_KEY_PATH" | ssh "${SERVER_USER}@${SERVER_ADDRESS}" 'mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys'
+# Установим правильные разрешения на директорию .ssh
+chmod 700 ~/.ssh
 
-echo "Публичный ключ добавлен в authorized_keys пользователя ${SERVER_USER} на сервере ${SERVER_ADDRESS}"
+echo "SSH-ключ добавлен в authorized_keys."
